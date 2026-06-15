@@ -1,0 +1,14 @@
+[package]
+name = "providers"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+domain.workspace = true
+async-trait.workspace = true
+reqwest.workspace = true
+scraper.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
