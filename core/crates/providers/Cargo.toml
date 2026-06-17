@@ -6,7 +6,9 @@ edition = "2024"
 [dependencies]
 domain.workspace = true
 async-trait.workspace = true
+regex.workspace = true
 reqwest.workspace = true
+rstest.workspace = true
 scraper.workspace = true
 thiserror.workspace = true
 

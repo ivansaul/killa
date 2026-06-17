@@ -67,3 +67,23 @@ pub struct Example {
     /// The translated sentence, if available.
     pub target: Option<String>,
 }
+
+#[derive(PartialEq, Debug)]
+pub struct PhoneticNotation {
+    /// e.g. IPA, X-SAMPA, Pinyin, Kana
+    pub system: Option<String>,
+
+    /// e.g. /dʒɪlə/
+    pub text: String,
+
+    /// e.g. UK, US, AU, informal
+    pub labels: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct PronunciationAudio {
+    pub url: String,
+
+    /// e.g. UK, US, AU
+    pub labels: Vec<String>,
+}
