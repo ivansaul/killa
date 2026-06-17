@@ -4,7 +4,7 @@ use scraper::{ElementRef, Html, Selector};
 
 use std::sync::LazyLock;
 
-use crate::wordref::helpers::text_content;
+use crate::wordref::helpers::own_text;
 
 const AUDIO_BASE_URL: &str = "https://www.wordreference.com";
 
@@ -31,7 +31,7 @@ pub fn parse_phonetics(html: &Html) -> Vec<PhoneticNotation> {
 
     widget
         .select(&PRON_WIDGET_SELECTOR)
-        .map(|e| text_content(&e, &[' ', ':']))
+        .map(|e| own_text(&e, &[' ', ':']))
         .collect::<Vec<_>>()
         .chunks_exact(2)
         .map(|chunk| PhoneticNotation {

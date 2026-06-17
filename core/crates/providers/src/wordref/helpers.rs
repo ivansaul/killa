@@ -1,8 +1,8 @@
 use scraper::{ElementRef, Node};
 
-/// Returns the concatenated text content of all `Node::Text` children,
+/// Returns the concatenated text of all direct `Node::Text` children,
 /// trimming the provided characters from both ends of each fragment.
-pub fn text_content(element: &ElementRef, trim: &[char]) -> String {
+pub fn own_text(element: &ElementRef, trim: &[char]) -> String {
     element
         .children()
         .filter_map(|node| match node.value() {
