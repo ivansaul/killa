@@ -1,13 +1,32 @@
+use std::sync::LazyLock;
+
 use domain::{Example, PartOfSpeech, Sense, Translation};
 use scraper::{ElementRef, Node, Selector};
 
 use crate::wordref::{
+    helpers::{full_text, own_text},
     models::{ParsedRow, SenseStartRow, TranslationRow},
-    selectors::{
-        FR_EX_SELECTOR, FR_WRD_SELECTOR, POS_SELECTOR, ROW_SELECTOR, STRONG_SELECTOR, TD_SELECTOR,
-        TO_EX_SELECTOR, TO_WRD_SELECTOR,
-    },
 };
+
+pub static ROW_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse("tr.odd, tr.even").unwrap());
+
+pub static FR_WRD_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(".FrWrd").unwrap());
+
+pub static TO_WRD_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse(".ToWrd").unwrap());
+
+pub static FR_EX_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse(".FrEx").unwrap());
+
+pub static TO_EX_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse(".ToEx").unwrap());
+
+pub static STRONG_SELECTOR: LazyLock<Selector> =
+    LazyLock::new(|| Selector::parse("strong").unwrap());
+
+pub static POS_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse(".POS2").unwrap());
+
+pub static TD_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("td").unwrap());
 
 pub fn parse_table(table: &ElementRef) -> Vec<Sense> {
     let rows = table.select(&ROW_SELECTOR);
@@ -113,14 +132,14 @@ fn parse_source_term(row: &ElementRef) -> String {
     row.select(&FR_WRD_SELECTOR)
         .next()
         .and_then(|fr| fr.select(&STRONG_SELECTOR).next())
-        .map(|e| text_content(&e))
+        .map(|e| own_text(&e, &['"', ' ']))
         .unwrap_or_default()
 }
 
 fn parse_gloss(row: &ElementRef) -> Option<String> {
     row.select(&TD_SELECTOR)
         .nth(1)
-        .map(|e| clean_text(&e))
+        .map(|e| full_text(&e))
         .map(|s| s.trim_matches(['(', ')', ' ']).to_string())
         .filter(|s| !s.is_empty())
 }
@@ -149,7 +168,7 @@ fn parse_translations(row: &ElementRef) -> Vec<Translation> {
 fn parse_examples(row: &ElementRef, selector: &Selector) -> Vec<String> {
     row.select(selector)
         .next()
-        .map(|el| clean_text(&el))
+        .map(|el| full_text(&el))
         .map(|text| {
             text.split("//")
                 .map(str::trim)
@@ -190,34 +209,11 @@ fn parse_pos_from_element(element: &ElementRef) -> Option<PartOfSpeech> {
     })
 }
 
-/// Returns the concatenated text content of all `Node::Text` within this element
-fn text_content(element: &ElementRef) -> String {
-    element
-        .children()
-        .filter_map(|node| match node.value() {
-            Node::Text(text) => Some(text),
-            _ => None,
-        })
-        .map(|s| s.trim_matches([' ', '"']))
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
-fn clean_text(element: &ElementRef) -> String {
-    element
-        .text()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
 #[cfg(test)]
 mod tests {
     use scraper::Html;
 
-    use crate::wordref::{parser::parse_source_term, selectors::ROW_SELECTOR};
+    use crate::wordref::sense::{ROW_SELECTOR, parse_source_term};
 
     #[test]
     fn test_parse_source_term() {
